@@ -21,15 +21,16 @@ This component renders a `<button>` element containing a checkmark icon and some
 text:
 
 ```javascript
-// Button.react.js
+// Button.js
 
-import CheckmarkIcon from './CheckmarkIcon.react';
+import React from 'react';
+import CheckmarkIcon from './CheckmarkIcon';
 
 function Button(props) {
   return (
     <button className="btn" onClick={props.onClick}>
       <CheckmarkIcon />
-      { React.Children.only(props.children) }
+      {React.Children.only(props.children)}
     </button>
   );
 }
@@ -42,15 +43,13 @@ _Note: This is a [state**less** ("dumb") component](../js/README.md#architecture
 It might be used in another component like this:
 
 ```javascript
-// HomePage.react.js
+// HomePage.js
 
-import Button from './Button.react';
+import Button from './Button';
 
 class HomePage extends React.Component {
   render() {
-    return(
-      <Button onClick={this.doSomething}>Click me!</Button>
-    );
+    return <Button onClick={this.doSomething}>Click me!</Button>;
   }
 }
 ```
@@ -59,7 +58,7 @@ _Note: This is a [state**ful** ("smart") component](../js/README.md#architecture
 
 When rendered normally with the standard `ReactDOM.render` function, this will
 be the HTML output
-(*Comments added in parallel to compare structures in HTML from JSX source*):
+(_Comments added in parallel to compare structures in HTML from JSX source_):
 
 ```html
 <button>                           <!-- <Button>             -->
@@ -100,6 +99,10 @@ pass it and third that handles clicks!
 This is our Jest setup:
 
 ```javascript
+import React from 'react';
+import { shallow } from 'enzyme';
+import Button from '../Button.react';
+
 describe('<Button />', () => {
   it('renders a <button>', () => {});
 
@@ -114,12 +117,8 @@ Lets start with testing that it renders a `<button>`. To do that we first
 
 ```javascript
 it('renders a <button>', () => {
-  const renderedComponent = shallow(
-    <Button></Button>
-  );
-  expect(
-    renderedComponent.find("button").node
-  ).toBeDefined();
+  const renderedComponent = shallow(<Button />);
+  expect(renderedComponent.find('button').node).toBeDefined();
 });
 ```
 
@@ -132,13 +131,9 @@ exists:
 
 ```javascript
 it('renders its children', () => {
-  const text = "Click me!";
-  const renderedComponent = shallow(
-    <Button>{ text }</Button>
-  );
-  expect(
-    renderedComponent.contains(text)
-  ).toEqual(true);
+  const text = 'Click me!';
+  const renderedComponent = shallow(<Button>{text}</Button>);
+  expect(renderedComponent.contains(text)).toEqual(true);
 });
 ```
 
@@ -157,4 +152,34 @@ it('handles clicks', () => {
 });
 ```
 
+Our finished test file looks like this:
+
+```javascript
+import React from 'react';
+import { shallow } from 'enzyme';
+import Button from '../Button.react';
+
+describe('<Button />', () => {
+  it('renders a <button>', () => {
+    const renderedComponent = shallow(<Button />);
+    expect(renderedComponent.find('button').node).toBeDefined();
+  });
+
+  it('renders its children', () => {
+    const text = 'Click me!';
+    const renderedComponent = shallow(<Button>{text}</Button>);
+    expect(renderedComponent.contains(text)).toEqual(true);
+  });
+
+  it('handles clicks', () => {
+    const onClickSpy = jest.fn();
+    const renderedComponent = shallow(<Button onClick={onClickSpy} />);
+    renderedComponent.find('button').simulate('click');
+    expect(onClickSpy).toHaveBeenCalled();
+  });
+});
+```
+
 And that's how you unit test your components and make sure they work correctly!
+
+_Continue to learn how to test your components [remotely](remote-testing.md)!_

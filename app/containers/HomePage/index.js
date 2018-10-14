@@ -2,146 +2,145 @@
  * HomePage
  *
  * This is the first thing users see of our App, at the '/' route
+ *
+ * NOTE: while this component should technically be a stateless functional
+ * component (SFC), hot reloading does not currently support SFCs. If hot
+ * reloading is not a necessity for you then you can refactor it and remove
+ * the linting exception.
  */
 
 import React from 'react';
-import Helmet from 'react-helmet';
+import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import { FormattedMessage } from 'react-intl';
-import { connect } from 'react-redux';
-import { createStructuredSelector } from 'reselect';
-import { DatePicker, Menu, Icon } from 'antd';
-
-import { makeSelectRepos, makeSelectLoading, makeSelectError } from 'containers/App/selectors';
-import H2 from 'components/H2';
-import ReposList from 'components/ReposList';
-import AtPrefix from './AtPrefix';
-import CenteredSection from './CenteredSection';
-import Form from './Form';
-import Input from './Input';
-import Section from './Section';
+import { Layout, Menu, Icon, Input, AutoComplete } from 'antd';
 import messages from './messages';
-import { loadRepos } from '../App/actions';
-import { changeUsername } from './actions';
-import { makeSelectUsername } from './selectors';
+import styles from './index.less';
 
-const SubMenu = Menu.SubMenu;
-const MenuItemGroup = Menu.ItemGroup;
+const { SubMenu } = Menu;
+const { Header, Content, Footer, Sider } = Layout;
+const { Search } = Input;
 
-export class HomePage extends React.PureComponent { // eslint-disable-line react/prefer-stateless-function
-  /**
-   * when initial state username is not null, submit the form to load repos
-   */
-  componentDidMount() {
-    if (this.props.username && this.props.username.trim().length > 0) {
-      this.props.onSubmitForm();
-    }
+/* eslint-disable react/prefer-stateless-function */
+export default class HomePage extends React.Component {
+  static defaultProps = {
+    defaultActiveFirstOption: false,
+    onPressEnter: () => {},
+    onSearch: () => {},
+    className: '',
+    placeholder: 'Search for anything',
+    dataSource: [],
+    defaultOpen: false,
+  };
+
+  static propTypes = {
+    className: PropTypes.string,
+    placeholder: PropTypes.string,
+    onSearch: PropTypes.func,
+    onPressEnter: PropTypes.func,
+    defaultActiveFirstOption: PropTypes.bool,
+    dataSource: PropTypes.array,
+    defaultOpen: PropTypes.bool,
+  };
+
+  state = {
+    searchMode: this.props.defaultOpen,
+    value: '',
+  };
+
+  componentWillMount() {
+    clearTimeout(this.timeout);
   }
 
-  render() {
-    const { loading, error, repos } = this.props;
-    const reposListProps = {
-      loading,
-      error,
-      repos,
-    };
+  onKeyDown = e => {
+    if (e.key === 'Enter') {
+      this.timeout = setTimeout(() => {
+        this.props.onPressEnter(this.state.value);
+      }, 0);
+    }
+  };
 
+  onChange = value => {
+    this.setState({ value });
+    if (this.props.onChange) {
+      this.props.onChange();
+    }
+  };
+
+  enterSearchMode = () => {
+    this.setState({ searchMode: true }, () => {
+      if (this.state.searchMode) {
+        this.input.focus();
+      }
+    });
+  };
+
+  leaveSearchMode = () => {
+    this.setState({ searchMode: false, value: '' });
+  };
+
+  render() {
+    const { className, placeholder, ...restProps } = this.props;
+    delete restProps.defaultOpen;
     return (
-      <article>
-        <Helmet
-          title="Home Page"
-          meta={[
-            { name: 'description', content: 'A React.js Boilerplate application homepage' },
-          ]}
-        />
-        <div>
-          <CenteredSection>
-            <H2>
-              <FormattedMessage {...messages.startProjectHeader} />
-            </H2>
-            <p>
-              <FormattedMessage {...messages.startProjectMessage} />
-            </p>
-          </CenteredSection>
-          <Section>
-            <H2>
-              <FormattedMessage {...messages.trymeHeader} />
-            </H2>
-            <Form onSubmit={this.props.onSubmitForm}>
-              <label htmlFor="username">
-                <FormattedMessage {...messages.trymeMessage} />
-                <AtPrefix>
-                  <FormattedMessage {...messages.trymeAtPrefix} />
-                </AtPrefix>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="mxstbr"
-                  value={this.props.username}
-                  onChange={this.props.onChangeUsername}
+      <Layout className={styles.homePage}>
+        <Sider>
+          <div
+            className="logo"
+            style={{
+              height: '32px',
+              background: '#666',
+              margin: '16px',
+            }}
+          />
+          <Menu mode="inline" theme="dark">
+            <Menu.Item key="1">123</Menu.Item>
+            <SubMenu
+              key="2"
+              collapsible
+              collapsed="true"
+              title={<span>123</span>}
+            >
+              <Menu.Item key="2.1">123</Menu.Item>
+              <Menu.Item key="2.2">2.2</Menu.Item>
+            </SubMenu>
+            <Menu.Item key="3">123</Menu.Item>
+          </Menu>
+        </Sider>
+        <Layout>
+          <Header className="" style={{ background: '#fff', padding: 0 }}>
+            <span onClick={this.enterSearchMode}>
+              <AutoComplete
+                key="AutoComplete"
+                {...restProps}
+                value={this.state.value}
+                onChange={this.onChange}
+              >
+                <Search
+                  size="large"
+                  placeholder={placeholder}
+                  ref={node => {
+                    this.input = node;
+                  }}
+                  onKeyDown={this.onKeyDown}
+                  onBlur={this.leaveSearchMode}
                 />
-                <DatePicker />
-                <Menu mode="horizontal">
-                  <Menu.Item key="mail">
-                    <Icon type="mail" />Navigation One
-                  </Menu.Item>
-                  <Menu.Item key="app">
-                    <Icon type="appstore" />Navigation Two
-                  </Menu.Item>
-                  <SubMenu title={<span><Icon type="setting" />Navigation Three - Submenu</span>}>
-                    <MenuItemGroup title="Item 1">
-                      <Menu.Item key="setting:1">Option 1</Menu.Item>
-                      <Menu.Item key="setting:2">Option 2</Menu.Item>
-                    </MenuItemGroup>
-                    <MenuItemGroup title="Item 2">
-                      <Menu.Item key="setting:3">Option 3</Menu.Item>
-                      <Menu.Item key="setting:4">Option 4</Menu.Item>
-                    </MenuItemGroup>
-                  </SubMenu>
-                  <Menu.Item key="alipay">
-                    <a href="https://ant.design" target="_blank" rel="noopener noreferrer">Navigation Four - Link</a>
-                  </Menu.Item>
-                </Menu>
-              </label>
-            </Form>
-            <ReposList {...reposListProps} />
-          </Section>
-        </div>
-      </article>
+              </AutoComplete>
+            </span>
+
+            <Menu mode="horizontal" theme="dark">
+              <Menu.Item key="1">
+                <Icon type="appstore" />
+              </Menu.Item>
+              <Menu.Item key="2">
+                <Icon type="user" />
+              </Menu.Item>
+            </Menu>
+          </Header>
+          <Content className={styles.content}>maincontent</Content>
+          <Footer>footer</Footer>
+        </Layout>
+      </Layout>
     );
   }
 }
-
-HomePage.propTypes = {
-  loading: React.PropTypes.bool,
-  error: React.PropTypes.oneOfType([
-    React.PropTypes.object,
-    React.PropTypes.bool,
-  ]),
-  repos: React.PropTypes.oneOfType([
-    React.PropTypes.array,
-    React.PropTypes.bool,
-  ]),
-  onSubmitForm: React.PropTypes.func,
-  username: React.PropTypes.string,
-  onChangeUsername: React.PropTypes.func,
-};
-
-export function mapDispatchToProps(dispatch) {
-  return {
-    onChangeUsername: (evt) => dispatch(changeUsername(evt.target.value)),
-    onSubmitForm: (evt) => {
-      if (evt !== undefined && evt.preventDefault) evt.preventDefault();
-      dispatch(loadRepos());
-    },
-  };
-}
-
-const mapStateToProps = createStructuredSelector({
-  repos: makeSelectRepos(),
-  username: makeSelectUsername(),
-  loading: makeSelectLoading(),
-  error: makeSelectError(),
-});
-
-// Wrap the component to inject dispatch and state into it
-export default connect(mapStateToProps, mapDispatchToProps)(HomePage);
