@@ -12,9 +12,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { FormattedMessage } from 'react-intl';
+// import { FormattedMessage } from 'react-intl';
 import { Layout, Menu, Icon, Input, AutoComplete } from 'antd';
-import messages from './messages';
+// import messages from './messages';
 import styles from './index.less';
 
 const { SubMenu } = Menu;
@@ -25,8 +25,8 @@ const { Search } = Input;
 export default class HomePage extends React.Component {
   static defaultProps = {
     defaultActiveFirstOption: false,
-    onPressEnter: () => {},
-    onSearch: () => {},
+    onPressEnter: () => { },
+    onSearch: () => { },
     className: '',
     placeholder: 'Search for anything',
     dataSource: [],
@@ -44,8 +44,15 @@ export default class HomePage extends React.Component {
   };
 
   state = {
+    collapsed: false,
     searchMode: this.props.defaultOpen,
     value: '',
+  };
+
+  toggle = () => {
+    this.setState({
+      collapsed: !this.state.collapsed,
+    });
   };
 
   componentWillMount() {
@@ -84,7 +91,12 @@ export default class HomePage extends React.Component {
     delete restProps.defaultOpen;
     return (
       <Layout className={styles.homePage}>
-        <Sider>
+        <Sider
+          className={styles.sider}
+          trigger={null}
+          collapsible
+          collapsed={this.state.collapsed}
+        >
           <div
             className="logo"
             style={{
@@ -108,7 +120,12 @@ export default class HomePage extends React.Component {
           </Menu>
         </Sider>
         <Layout>
-          <Header className="" style={{ background: '#fff', padding: 0 }}>
+          <Header className={styles.header}>
+            <Icon
+              className={styles.trigger}
+              type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
+              onClick={this.toggle}
+            />
             <span onClick={this.enterSearchMode}>
               <AutoComplete
                 key="AutoComplete"
@@ -124,21 +141,37 @@ export default class HomePage extends React.Component {
                   }}
                   onKeyDown={this.onKeyDown}
                   onBlur={this.leaveSearchMode}
+                  className={ styles.search }
                 />
               </AutoComplete>
             </span>
-
-            <Menu mode="horizontal" theme="dark">
-              <Menu.Item key="1">
-                <Icon type="appstore" />
-              </Menu.Item>
-              <Menu.Item key="2">
-                <Icon type="user" />
-              </Menu.Item>
-            </Menu>
           </Header>
-          <Content className={styles.content}>maincontent</Content>
-          <Footer>footer</Footer>
+          <Content className={styles.content}>...
+          <br />
+            Really
+          <br />...<br />...<br />...<br />
+            long
+          <br />...<br />...<br />...<br />...<br />...<br />...
+          <br />...<br />...<br />...<br />...<br />...<br />...
+          <br />...<br />...<br />...<br />...<br />...<br />...
+          <br />...<br />...<br />...<br />...<br />...<br />...
+          <br />...<br />...<br />...<br />...<br />...<br />...
+          <br />...<br />...<br />...<br />...<br />...<br />...
+          <br />...<br />...<br />...<br />...<br />...<br />
+            content...
+          <br />
+            Really
+          <br />...<br />...<br />...<br />
+            long
+          <br />...<br />...<br />...<br />...<br />...<br />...
+          <br />...<br />...<br />...<br />...<br />...<br />...
+          <br />...<br />...<br />...<br />...<br />...<br />...
+          <br />...<br />...<br />...<br />...<br />...<br />...
+          <br />...<br />...<br />...<br />...<br />...<br />...
+          <br />...<br />...<br />...<br />...<br />...<br />...
+          <br />...<br />...<br />...<br />...<br />...<br />
+            content</Content>
+          <Footer className={styles.footer}>footer</Footer>
         </Layout>
       </Layout>
     );
